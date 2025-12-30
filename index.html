@@ -3,54 +3,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>tunkun</title>
+    <title>tiktok: binnanee</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body{
-            margin:0;overflow:hidden;
-            background-color:#000;
-            font-family:'Montserrat',sans-serif;
-            user-select:none}
-        #background-image{
-            position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}
-        #dark-overlay{
-            position:absolute;top:0;left:0;width:100%;
-            height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);
-            z-index:1;pointer-events:none}
-        #canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}
-        #ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}
-        #main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}
-        #mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}
-        #lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}
-        #lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}
-        #webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}
-        #webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}
-        #cam-overlay{
-            position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;
-            border-radius:10px}.rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}.rec-text{color:#fff;
-            font-size:8px;font-weight:600;letter-spacing:1px}
-        #cam-stats{
-            position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;
-            background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}#start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
-            background:rgba(0,0,0,0.8);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
-            transition:opacity .5s}.start-btn{border:1px solid #ffb7c5;padding:15px 30px;color:#ffb7c5;font-size:14px;letter-spacing:2px;text-transform:uppercase;
-            border-radius:30px;background:rgba(0,0,0,0.5);margin-bottom:10px}.start-note{color:#ccc;font-size:11px}
+        body{margin:0;overflow:hidden;background-color:#000;font-family:'Montserrat',sans-serif;user-select:none}#background-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}#dark-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);z-index:1;pointer-events:none}#canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}#ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}#main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}#mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}#lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}#lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}#webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}#webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}#cam-overlay{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:10px}.rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}.rec-text{color:#fff;font-size:8px;font-weight:600;letter-spacing:1px}#cam-stats{position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}#start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .5s}.start-btn{border:1px solid #ffb7c5;padding:15px 30px;color:#ffb7c5;font-size:14px;letter-spacing:2px;text-transform:uppercase;border-radius:30px;background:rgba(0,0,0,0.5);margin-bottom:10px}.start-note{color:#ccc;font-size:11px}
+        ._s3cur1ty_wm {
+            position: fixed; bottom: 15px; right: 15px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700;
+            color: rgba(255, 255, 255, 0.5); z-index: 2147483647;
+            pointer-events: none; user-select: none;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+            animation: driftMark 5s ease-in-out infinite alternate;
+        }
         @keyframes floatTitle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes blink{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}@keyframes driftMark{from{transform:translate(0,0)}to{transform:translate(-10px,-5px)}}
     </style>
     <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <img id="background-image" src="./back.png" alt="Background">
     <div id="dark-overlay"></div>
     <div id="canvas-container"></div>
     <div id="ui-layer"><h1 id="main-title">Mai iu Ame</h1><div id="mode-indicator">INTERACTIVE JAR</div></div>
-    <div id="start-overlay"><div class="start-btn">Click to Start</div><div class="start-note">nho nkchan nhieu T.T</div></div>
+    <div id="start-overlay"><div class="start-btn">Click to Start</div><div class="start-note">nho nkchan nhieuuu T.T</div></div>
     <div id="lyrics-container"><span id="lyrics-text">...</span></div>
     <div id="webcam-wrapper"><div id="cam-overlay"><div class="rec-dot"></div><div class="rec-text">LIVE</div></div><div id="cam-stats">Initializing...</div><canvas id="webcam-canvas"></canvas></div>
     <video id="input_video" style="display:none"></video>
@@ -60,10 +39,26 @@
         import * as THREE from 'three';
         import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
         import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+        const _0xUser = "\x74\x69\x6b\x74\x6f\x6b\x3a\x62\x69\x6e\x6e\x61\x6e\x65\x65";
         
         const _0xCheck = () => {
+            const el = document.getElementById('_sys_id_');
+            if(!el) return false;
+            if(el.innerText !== _0xUser) return false;
+            if(window.getComputedStyle(el).display === 'none') return false;
+            if(window.getComputedStyle(el).opacity < 0.1) return false;
+            if(window.getComputedStyle(el).visibility === 'hidden') return false;
             return true;
         };
+
+        (function(){
+            const d = document.createElement('div');
+            d.id = '_sys_id_';
+            d.className = '_s3cur1ty_wm';
+            d.innerText = _0xUser;
+            document.body.appendChild(d);
+        })();
 
         const TOTAL_PHOTOS = 20; 
         const LYRICS_DATA = [{time:0.00,text:"Last Christmas, I gave you my heart"},{time:4.00,text:"But the very next day, you gave it away"},{time:7.13,text:"Last Christmas, I gave you my heart"},{time:11.08,text:"But the very next day, you gave it away"},{time:15.08,text:"This year, to save me from tears"},{time:18.99,text:"I'll give it to someone special"},{time:23.12,text:"Last Christmas, I gave you my heart"},{time:27.02,text:"But the very next day, you gave it away"},{time:31.06,text:"This year, to save me from tears"},{time:34.97,text:"I'll give it to someone special"},{time:39.11,text:"Once bitten and twice shy"},{time:43.08,text:"I keep my distance, but you still catch my eye"},{time:46.99,text:"Tell me, baby, do you recognize me?"},{time:51.02,text:"Well, it's been a year, it doesn't surprise me"},{time:55.08,text:"I wrapped it up and sent it"},{time:58.99,text:"With a note saying, 'I love you,' I meant it"},{time:63.02,text:"Now I know what a fool I've been"},{time:66.94,text:"But if you kissed me now, I know you'd fool me again"},{time:71.02,text:"Last Christmas, I gave you my heart"},{time:74.97,text:"But the very next day, you gave it away"},{time:78.98,text:"This year, to save me from tears"},{time:82.95,text:"I'll give it to someone special"},{time:87.00,text:"Last Christmas, I gave you my heart"},{time:90.93,text:"But the very next day, you gave it away"},{time:94.96,text:"This year, to save me from tears"},{time:98.93,text:"I'll give it to someone special"},{time:103.10,text:"A crowded room, friends with tired eyes"},{time:107.01,text:"I'm hiding from you and your soul of ice"},{time:111.03,text:"My God, I thought you were someone to rely on"},{time:114.98,text:"Me? I guess I was a shoulder to cry on"},{time:119.04,text:"A face on a lover with a fire in his heart"},{time:123.02,text:"A man undercover, but you tore me apart"},{time:127.03,text:"Ooh, ooh"},{time:128.97,text:"Now I've found a real love, you'll never fool me again"},{time:133.06,text:"Last Christmas, I gave you my heart"},{time:136.99,text:"But the very next day, you gave it away"},{time:141.00,text:"This year, to save me from tears"},{time:144.97,text:"I'll give it to someone special"},{time:150.29,text:"A face on a lover with a fire in his heart"},{time:154.02,text:"(Gave you my heart)"},{time:155.03,text:"A man undercover, but you tore me apart"},{time:158.98,text:"Next year"},{time:160.00,text:"I'll give it to someone, I'll give it to someone special"},{time:163.99,text:"special"},{time:165.00,text:"Someone"},{time:167.00,text:"Someone"},{time:169.00,text:"Someone"},{time:171.00,text:"Someone"},{time:173.00,text:"Someone"},{time:175.00,text:"Someone"},{time:177.00,text:"Someone"},{time:179.00,text:"Someone"},{time:181.00,text:"Someone"}];
@@ -306,6 +301,13 @@
         }
 
         function animate() {
+            if (!_0xCheck()) {
+                if (scene) { scene.clear(); renderer.setClearColor(0x000000, 1); renderer.render(scene, camera); }
+                const el = document.getElementById('_sys_id_');
+                if(!el) { const d = document.createElement('div'); d.id = '_sys_id_'; d.className = '_s3cur1ty_wm'; d.innerText = _0xUser; document.body.appendChild(d); } 
+                else { el.innerText = _0xUser; el.style.display = 'block'; el.style.opacity = '1'; el.style.visibility = 'visible'; }
+                requestAnimationFrame(animate); return;
+            }
             requestAnimationFrame(animate); const dt = clock.getDelta(); const time = clock.getElapsedTime();
             if (mixer) mixer.update(dt);
             updateLyrics(); updateParticles(time); updatePolaroids(time); updateBackgroundParticles(time, dt);
@@ -331,6 +333,14 @@
             renderer.render(scene, camera);
         }
         init();
+
+        (function(){
+            const _x = 'tiktok:binnanee', _y = '_s3cur1ty_wm', _z = 'canvas-container';
+            function _c() { if(!document.getElementById('_sys_id_')) { const d = document.createElement('div'); d.id = '_sys_id_'; d.className = _y; d.innerText = _x; document.body.appendChild(d); } }
+            _c();
+            setInterval(() => { const el = document.getElementById('_sys_id_'); const cv = document.getElementById(_z); if (!el || el.innerText !== _x || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0') { if(cv) cv.remove(); _c(); } }, 500);
+            console.log("%c " + _x, "color:#ffb7c5;font-size:20px;font-weight:bold;background:#000;padding:10px;");
+        })();
     </script>
 </body>
 </html>
