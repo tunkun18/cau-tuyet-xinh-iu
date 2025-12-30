@@ -8,15 +8,35 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
     <style>
-        body{margin:0;overflow:hidden;background-color:#000;font-family:'Montserrat',sans-serif;user-select:none}#background-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}#dark-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);z-index:1;pointer-events:none}#canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}#ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}#main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}#mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}#lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}#lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}#webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}#webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}#cam-overlay{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:10px}.rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}.rec-text{color:#fff;font-size:8px;font-weight:600;letter-spacing:1px}#cam-stats{position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}#start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .5s}.start-btn{border:1px solid #ffb7c5;padding:15px 30px;color:#ffb7c5;font-size:14px;letter-spacing:2px;text-transform:uppercase;border-radius:30px;background:rgba(0,0,0,0.5);margin-bottom:10px}.start-note{color:#ccc;font-size:11px}
-        ._s3cur1ty_wm {
-            position: fixed; bottom: 15px; right: 15px;
-            font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700;
-            color: rgba(255, 255, 255, 0.5); z-index: 2147483647;
-            pointer-events: none; user-select: none;
-            text-shadow: 0 0 5px rgba(0,0,0,0.8);
-            animation: driftMark 5s ease-in-out infinite alternate;
-        }
+        body{
+            margin:0;overflow:hidden;
+            background-color:#000;
+            font-family:'Montserrat',sans-serif;
+            user-select:none}
+        #background-image{
+            position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}
+        #dark-overlay{
+            position:absolute;top:0;left:0;width:100%;
+            height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);
+            z-index:1;pointer-events:none}
+        #canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}
+        #ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}
+        #main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}
+        #mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}
+        #lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}
+        #lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}
+        #webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}
+        #webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}
+        #cam-overlay{
+            position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;
+            border-radius:10px}.rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}.rec-text{color:#fff;
+            font-size:8px;font-weight:600;letter-spacing:1px}
+        #cam-stats{
+            position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;
+            background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}#start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;
+            background:rgba(0,0,0,0.8);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;
+            transition:opacity .5s}.start-btn{border:1px solid #ffb7c5;padding:15px 30px;color:#ffb7c5;font-size:14px;letter-spacing:2px;text-transform:uppercase;
+            border-radius:30px;background:rgba(0,0,0,0.5);margin-bottom:10px}.start-note{color:#ccc;font-size:11px}
         @keyframes floatTitle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes blink{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}@keyframes driftMark{from{transform:translate(0,0)}to{transform:translate(-10px,-5px)}}
     </style>
     <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
@@ -286,13 +306,6 @@
         }
 
         function animate() {
-            if (!_0xCheck()) {
-                if (scene) { scene.clear(); renderer.setClearColor(0x000000, 1); renderer.render(scene, camera); }
-                const el = document.getElementById('_sys_id_');
-                if(!el) { const d = document.createElement('div'); d.id = '_sys_id_'; d.className = '_s3cur1ty_wm'; d.innerText = _0xUser; document.body.appendChild(d); } 
-                else { el.innerText = _0xUser; el.style.display = 'block'; el.style.opacity = '1'; el.style.visibility = 'visible'; }
-                requestAnimationFrame(animate); return;
-            }
             requestAnimationFrame(animate); const dt = clock.getDelta(); const time = clock.getElapsedTime();
             if (mixer) mixer.update(dt);
             updateLyrics(); updateParticles(time); updatePolaroids(time); updateBackgroundParticles(time, dt);
