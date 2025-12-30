@@ -1,0 +1,7 @@
+#start-overlay {
+    z-index: 9999 !important;
+    pointer-events: :auto !important;
+}
+#canvas-container {
+    pointer-events: none !important;
+}
