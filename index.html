@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>tiktok: binnanee</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body{margin:0;overflow:hidden;background-color:#000;font-family:'Montserrat',sans-serif;user-select:none}#background-image{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;z-index:0}#dark-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:radial-gradient(circle,rgba(0,0,0,0) 0%,rgba(0,0,0,0.4) 100%);z-index:1;pointer-events:none}#canvas-container{width:100vw;height:100vh;position:absolute;top:0;left:0;z-index:2;transition:opacity .3s}#ui-layer{position:absolute;top:0;left:0;width:100%;height:100%;z-index:10;pointer-events:none;display:flex;flex-direction:column;align-items:center;padding-top:40px}#main-title{font-family:'Great Vibes',cursive;font-size:65px;color:#ffb7c5;margin:0;text-shadow:0 0 5px rgba(0,0,0,0.5);animation:floatTitle 3s ease-in-out infinite}#mode-indicator{font-size:10px;color:rgba(255,255,255,0.9);letter-spacing:4px;text-transform:uppercase;margin-top:5px;text-shadow:0 0 2px #000}#lyrics-container{position:absolute;bottom:140px;width:100%;text-align:center;z-index:20;pointer-events:none}#lyrics-text{font-family:'Times New Roman',Times,serif;font-size:22px;font-style:italic;font-weight:500;color:#fff;text-shadow:0 0 4px rgba(0,0,0,0.9);padding:0 20px}#webcam-wrapper{position:absolute;bottom:30px;left:30px;width:150px;height:112px;z-index:50;background:#000;border:1px solid rgba(255,255,255,0.3);border-radius:12px;box-shadow:0 0 10px rgba(0,0,0,0.5);overflow:hidden}#webcam-canvas{width:100%;height:100%;transform:scaleX(-1);border-radius:12px}#cam-overlay{position:absolute;top:8px;right:8px;display:flex;align-items:center;gap:4px;z-index:25;background:rgba(0,0,0,0.5);padding:2px 6px;border-radius:10px}.rec-dot{width:5px;height:5px;background-color:#f36;border-radius:50%;animation:blink 1.5s infinite}.rec-text{color:#fff;font-size:8px;font-weight:600;letter-spacing:1px}#cam-stats{position:absolute;bottom:0;left:0;width:100%;text-align:center;font-size:8px;font-weight:500;color:#ffb7c5;z-index:26;background:linear-gradient(to top,rgba(0,0,0,0.8),transparent);padding:4px 0}#start-overlay{position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.8);z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;transition:opacity .5s}.start-btn{border:1px solid #ffb7c5;padding:15px 30px;color:#ffb7c5;font-size:14px;letter-spacing:2px;text-transform:uppercase;border-radius:30px;background:rgba(0,0,0,0.5);margin-bottom:10px}.start-note{color:#ccc;font-size:11px}
+        ._s3cur1ty_wm {
+            position: fixed; bottom: 15px; right: 15px;
+            font-family: 'Montserrat', sans-serif; font-size: 14px; font-weight: 700;
+            color: rgba(255, 255, 255, 0.5); z-index: 2147483647;
+            pointer-events: none; user-select: none;
+            text-shadow: 0 0 5px rgba(0,0,0,0.8);
+            animation: driftMark 5s ease-in-out infinite alternate;
+        }
+        @keyframes floatTitle{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}@keyframes blink{0%{opacity:1}50%{opacity:.3}100%{opacity:1}}@keyframes driftMark{from{transform:translate(0,0)}to{transform:translate(-10px,-5px)}}
+    </style>
+    <script type="importmap">{"imports":{"three":"https://unpkg.com/three@0.160.0/build/three.module.js","three/addons/":"https://unpkg.com/three@0.160.0/examples/jsm/"}}</script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+</head>
+<body>
+    <img id="background-image" src="./back.png" alt="Background">
+    <div id="dark-overlay"></div>
+    <div id="canvas-container"></div>
+    <div id="ui-layer"><h1 id="main-title">Merry Xmas</h1><div id="mode-indicator">INTERACTIVE JAR</div></div>
+    <div id="start-overlay"><div class="start-btn">Click to Start</div><div class="start-note">♫ Last Christmas</div></div>
+    <div id="lyrics-container"><span id="lyrics-text">...</span></div>
+    <div id="webcam-wrapper"><div id="cam-overlay"><div class="rec-dot"></div><div class="rec-text">LIVE</div></div><div id="cam-stats">Initializing...</div><canvas id="webcam-canvas"></canvas></div>
+    <video id="input_video" style="display:none"></video>
+    <audio id="bg-music" src="./audio.mp3" loop></audio>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
+
+        const _0xUser = "\x74\x69\x6b\x74\x6f\x6b\x3a\x62\x69\x6e\x6e\x61\x6e\x65\x65";
+        
+        const _0xCheck = () => {
+            const el = document.getElementById('_sys_id_');
+            if(!el) return false;
+            if(el.innerText !== _0xUser) return false;
+            if(window.getComputedStyle(el).display === 'none') return false;
+            if(window.getComputedStyle(el).opacity < 0.1) return false;
+            if(window.getComputedStyle(el).visibility === 'hidden') return false;
+            return true;
+        };
+
+        (function(){
+            const d = document.createElement('div');
+            d.id = '_sys_id_';
+            d.className = '_s3cur1ty_wm';
+            d.innerText = _0xUser;
+            document.body.appendChild(d);
+        })();
+
+        const TOTAL_PHOTOS = 20; 
+        const LYRICS_DATA = [{time:0.00,text:"Last Christmas, I gave you my heart"},{time:4.00,text:"But the very next day, you gave it away"},{time:7.13,text:"Last Christmas, I gave you my heart"},{time:11.08,text:"But the very next day, you gave it away"},{time:15.08,text:"This year, to save me from tears"},{time:18.99,text:"I'll give it to someone special"},{time:23.12,text:"Last Christmas, I gave you my heart"},{time:27.02,text:"But the very next day, you gave it away"},{time:31.06,text:"This year, to save me from tears"},{time:34.97,text:"I'll give it to someone special"},{time:39.11,text:"Once bitten and twice shy"},{time:43.08,text:"I keep my distance, but you still catch my eye"},{time:46.99,text:"Tell me, baby, do you recognize me?"},{time:51.02,text:"Well, it's been a year, it doesn't surprise me"},{time:55.08,text:"I wrapped it up and sent it"},{time:58.99,text:"With a note saying, 'I love you,' I meant it"},{time:63.02,text:"Now I know what a fool I've been"},{time:66.94,text:"But if you kissed me now, I know you'd fool me again"},{time:71.02,text:"Last Christmas, I gave you my heart"},{time:74.97,text:"But the very next day, you gave it away"},{time:78.98,text:"This year, to save me from tears"},{time:82.95,text:"I'll give it to someone special"},{time:87.00,text:"Last Christmas, I gave you my heart"},{time:90.93,text:"But the very next day, you gave it away"},{time:94.96,text:"This year, to save me from tears"},{time:98.93,text:"I'll give it to someone special"},{time:103.10,text:"A crowded room, friends with tired eyes"},{time:107.01,text:"I'm hiding from you and your soul of ice"},{time:111.03,text:"My God, I thought you were someone to rely on"},{time:114.98,text:"Me? I guess I was a shoulder to cry on"},{time:119.04,text:"A face on a lover with a fire in his heart"},{time:123.02,text:"A man undercover, but you tore me apart"},{time:127.03,text:"Ooh, ooh"},{time:128.97,text:"Now I've found a real love, you'll never fool me again"},{time:133.06,text:"Last Christmas, I gave you my heart"},{time:136.99,text:"But the very next day, you gave it away"},{time:141.00,text:"This year, to save me from tears"},{time:144.97,text:"I'll give it to someone special"},{time:150.29,text:"A face on a lover with a fire in his heart"},{time:154.02,text:"(Gave you my heart)"},{time:155.03,text:"A man undercover, but you tore me apart"},{time:158.98,text:"Next year"},{time:160.00,text:"I'll give it to someone, I'll give it to someone special"},{time:163.99,text:"special"},{time:165.00,text:"Someone"},{time:167.00,text:"Someone"},{time:169.00,text:"Someone"},{time:171.00,text:"Someone"},{time:173.00,text:"Someone"},{time:175.00,text:"Someone"},{time:177.00,text:"Someone"},{time:179.00,text:"Someone"},{time:181.00,text:"Someone"}];
+        const SCENE_CONFIG = { scaleFar: 10.00, posFar: { x: 0.0, y: -0.6 }, camZFar: 7.7, scaleNear: 10.00, posNear: { x: 0.0, y: -0.7 }, camZNear: 2.5, zoomSpeed: 0.1, rotateSpeed: 0.08 };
+        const LAYERS = [
+            { id: 'inner_snow', shape: 'Snowflake', count: 400, opacity: 0.9, color: '#ffffff', speed: 0.0005, size: 0.06, radius: 0.48, startY: 1.1, endY: -0.3, drift: 0.01, twinkle: false, rotateWithJar: true },
+            { id: 'snow_main', shape: 'Snowflake', count: 150, opacity: 0.9, color: '#e0ffff', speed: 0.0010, size: 0.18, radius: 5.0, startY: 7.0, endY: -6.0, drift: 0.05, twinkle: true, rotateWithJar: true },
+            { id: 'gold_dust', shape: 'Circle', count: 120, opacity: 0.8, color: '#ffcc00', speed: 0.0006, size: 0.03, radius: 4.5, startY: 6.0, endY: -4.0, drift: 0.08, twinkle: true, rotateWithJar: true }
+        ];
+
+        let scene, camera, renderer, carModel, mixer, particleSystems = {}, textureCache = {}, polaroidTextures = [], polaroidGroup, clock = new THREE.Clock(), bgParticleGroup;
+        let isGalleryMode = false, lastGesture = 'NONE', isZoomedIn = false, lastSwitchTime = 0, lastDropTime = 0, jarOffsetY = 0, inspectedPhoto = null;
+        const SWITCH_COOLDOWN = 1.5;
+        const STATE = { hand: { detected: false, x: 0.5, y: 0.5, gesture: 'NONE' }, rotation: { currentY: 0, currentX: 0 } };
+
+        function init() {
+            const overlay = document.getElementById('start-overlay');
+            const audio = document.getElementById('bg-music');
+            overlay.addEventListener('click', () => {
+                audio.play().then(() => {
+                    overlay.style.opacity = 0;
+                    setTimeout(() => overlay.remove(), 500);
+                }).catch(e => console.log(e));
+            });
+
+            const container = document.getElementById('canvas-container');
+            scene = new THREE.Scene();
+            camera = new THREE.PerspectiveCamera(45, window.innerWidth/window.innerHeight, 0.1, 1000);
+            camera.position.set(0, 0, SCENE_CONFIG.camZFar);
+            
+            renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            renderer.setPixelRatio(window.devicePixelRatio);
+            renderer.toneMapping = THREE.ACESFilmicToneMapping;
+            renderer.toneMappingExposure = 1.2;
+            container.appendChild(renderer.domElement);
+
+            const pmremGenerator = new THREE.PMREMGenerator(renderer);
+            scene.environment = pmremGenerator.fromScene(new RoomEnvironment(), 0.04).texture;
+            
+            const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
+            dirLight.position.set(5, 10, 7);
+            scene.add(dirLight);
+            scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+
+            loadTextures(); setupBackgroundParticles(); loadPolaroidTextures(); LAYERS.forEach(createLayerSystem); createPolaroids();
+
+            new GLTFLoader().load('./car.glb', (gltf) => {
+                carModel = gltf.scene;
+                carModel.scale.setScalar(SCENE_CONFIG.scaleFar);
+                carModel.position.set(SCENE_CONFIG.posFar.x, SCENE_CONFIG.posFar.y, 0);
+                carModel.position.z = -0.5;
+                carModel.rotation.set(0,0,0);
+                if (gltf.animations.length) { mixer = new THREE.AnimationMixer(carModel); mixer.clipAction(gltf.animations[0]).play(); }
+                scene.add(carModel);
+            });
+
+            initHandTracking();
+            window.addEventListener('resize', () => { camera.aspect = window.innerWidth / window.innerHeight; camera.updateProjectionMatrix(); renderer.setSize(window.innerWidth, window.innerHeight); });
+            animate();
+        }
+
+        function loadPolaroidTextures() {
+            const imgLoader = new THREE.ImageLoader();
+            imgLoader.crossOrigin = 'anonymous'; 
+            const cacheBuster = Date.now();
+            for (let i = 1; i <= TOTAL_PHOTOS; i++) {
+                const canvas = document.createElement('canvas'); canvas.width = 256; canvas.height = 300; const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.fillStyle = '#eee'; ctx.fillRect(15, 15, 226, 226);
+                ctx.fillStyle = '#333'; ctx.font = '16px Arial'; ctx.textAlign = 'center'; ctx.fillText('Loading...', 128, 130);
+                const texture = new THREE.CanvasTexture(canvas); texture.colorSpace = THREE.SRGBColorSpace; polaroidTextures.push(texture);
+                const path = `./images/${i}.png?v=${cacheBuster}`;
+                imgLoader.load(path, (image) => {
+                    ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.drawImage(image, 15, 15, 226, 226);
+                    ctx.fillStyle = '#333'; ctx.font = '22px Montserrat'; ctx.textAlign = 'center'; ctx.fillText(`Moment ${i}`, 128, 275);
+                    texture.needsUpdate = true;
+                }, undefined, () => {
+                    ctx.fillStyle = '#fdfdfd'; ctx.fillRect(0, 0, 256, 300); ctx.fillStyle = '#ffcccc'; ctx.fillRect(15, 15, 226, 226);
+                    ctx.fillStyle = '#cc0000'; ctx.font = 'bold 20px Arial'; ctx.textAlign = 'center'; ctx.fillText('NO IMAGE', 128, 120);
+                    ctx.font = '14px Arial'; ctx.fillText(`${i}.png`, 128, 150); texture.needsUpdate = true;
+                });
+            }
+        }
+
+        function updateLyrics() {
+            const audio = document.getElementById('bg-music'); const lyricBox = document.getElementById('lyrics-text');
+            if(!audio || audio.paused || LYRICS_DATA.length === 0) return;
+            const t = audio.currentTime; let currentLine = "";
+            for(let i=0; i<LYRICS_DATA.length; i++) { if (t >= LYRICS_DATA[i].time) { if (i === LYRICS_DATA.length - 1 || t < LYRICS_DATA[i+1].time) { currentLine = LYRICS_DATA[i].text; break; } } }
+            if (lyricBox.innerText !== currentLine) lyricBox.innerText = currentLine;
+        }
+
+        function loadTextures() {
+            const textureLoader = new THREE.TextureLoader(); textureCache['Snowflake'] = textureLoader.load('./snow.png'); 
+            const cvs = document.createElement('canvas'); cvs.width=64; cvs.height=64; const ctx = cvs.getContext('2d'); 
+            const g = ctx.createRadialGradient(32,32,0,32,32,30); g.addColorStop(0,'rgba(255,255,255,1)'); g.addColorStop(0.4,'rgba(255,255,255,0.5)'); g.addColorStop(1,'rgba(255,255,255,0)'); 
+            ctx.fillStyle=g; ctx.fillRect(0,0,64,64); textureCache['Circle'] = new THREE.CanvasTexture(cvs);
+        }
+
+        function setupBackgroundParticles() {
+            bgParticleGroup = new THREE.Group(); bgParticleGroup.position.z = -15; scene.add(bgParticleGroup);
+            const c=300; const g=new THREE.BufferGeometry(); const p=new Float32Array(c*3);
+            for(let i=0;i<c;i++){ p[i*3]=(Math.random()-0.5)*100; p[i*3+1]=(Math.random()-0.5)*80; p[i*3+2]=(Math.random()-0.5)*50; }
+            g.setAttribute('position',new THREE.BufferAttribute(p,3));
+            const m = new THREE.PointsMaterial({color:0xffffff, size:0.6, transparent:true, opacity:0.6, map:textureCache['Circle'], depthWrite:false});
+            bgParticleGroup.add(new THREE.Points(g, m));
+        }
+
+        function updateBackgroundParticles(time, dt) {
+            if(!bgParticleGroup) return;
+            const breathScale = 1.0 + Math.sin(time * 0.5) * 0.05; bgParticleGroup.scale.setScalar(breathScale); bgParticleGroup.rotation.y = Math.sin(time*0.1) * 0.1;
+        }
+
+        function createPolaroids() {
+            polaroidGroup = new THREE.Group(); const geometry = new THREE.PlaneGeometry(0.7, 0.9); 
+            const count = TOTAL_PHOTOS; const cols = 5; const radiusBase = 4.0; 
+            for (let i = 0; i < count; i++) {
+                const material = new THREE.MeshBasicMaterial({ map: polaroidTextures[i], side: THREE.DoubleSide, transparent: true, opacity: 0 });
+                const polaroid = new THREE.Mesh(geometry, material);
+                const row = Math.floor(i / cols); const col = i % cols; const yBase = -1.5 + (row * 1.25); const angleStep = (Math.PI * 2 * 0.8) / cols; 
+                const angleOffset = (row % 2 === 0) ? 0 : (angleStep / 2); const theta = -2.5 + (col * angleStep) + angleOffset; 
+                const x = radiusBase * Math.cos(theta); const z = radiusBase * Math.sin(theta); const targetRotY = Math.atan2(x, z) + Math.PI;
+                polaroid.userData = { targetPos: new THREE.Vector3(x + (Math.random()-0.5)*0.2, yBase + (Math.random()-0.5)*0.3, z + (Math.random()-0.5)*0.2), startPos: new THREE.Vector3(x * 5, yBase * 5, z * 5), floatOffset: Math.random() * 100, targetRot: { y: targetRotY, z: (Math.random() - 0.5) * 0.2 }, originalIndex: i };
+                polaroid.position.copy(polaroid.userData.startPos); polaroid.visible = false; polaroidGroup.add(polaroid);
+            }
+            scene.add(polaroidGroup);
+        }
+
+        function createLayerSystem(config) {
+            const geo = new THREE.BufferGeometry(); const pos = [], vel = [], off = [];
+            for (let i = 0; i < config.count; i++) {
+                const r = config.radius * Math.sqrt(Math.random()); const theta = Math.random() * 2 * Math.PI;
+                pos.push(r * Math.cos(theta), config.startY - Math.random()*(config.startY-config.endY), r * Math.sin(theta));
+                vel.push((Math.random() * 0.4) + 0.6); off.push(Math.random() * 100);
+            }
+            geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setAttribute('velocity', new THREE.Float32BufferAttribute(vel, 1)); geo.setAttribute('offset', new THREE.Float32BufferAttribute(off, 1));
+            const mat = new THREE.PointsMaterial({ size: config.size, color: new THREE.Color(config.color), map: textureCache[config.shape], transparent: true, opacity: config.opacity, blending: THREE.NormalBlending, depthWrite: false, sizeAttenuation: true });
+            const sys = new THREE.Points(geo, mat); sys.userData = { config: config }; particleSystems[config.id] = sys; scene.add(sys);
+        }
+
+        function toggleMode() {
+            const now = clock.getElapsedTime(); if (now - lastSwitchTime < SWITCH_COOLDOWN) return; 
+            lastSwitchTime = now; isGalleryMode = !isGalleryMode; const indicator = document.getElementById('mode-indicator');
+            if (isGalleryMode) {
+                indicator.innerText = "MODE: PHOTO GALLERY"; indicator.style.color = "#00ffff";
+                gsap.to(window, { duration: 1.2, jarOffsetY: -8, ease: "power2.inOut" }); 
+                polaroidGroup.rotation.set(0,0,0);
+                polaroidGroup.children.forEach((polaroid, index) => {
+                    polaroid.visible = true; polaroid.position.copy(polaroid.userData.startPos); polaroid.material.opacity = 0;
+                    const t = polaroid.userData.targetPos; const r = polaroid.userData.targetRot;
+                    gsap.to(polaroid.position, { x: t.x, y: t.y, z: t.z, duration: 1.2, ease: "power3.out", delay: index * 0.03 });
+                    gsap.to(polaroid.rotation, { x: 0, y: r.y, z: r.z, duration: 1.2, ease: "power3.out", delay: index * 0.03 });
+                    gsap.to(polaroid.material, { opacity: 1, duration: 0.8, delay: index * 0.03 });
+                });
+            } else {
+                indicator.innerText = "MODE: JAR CONTROL"; indicator.style.color = "#ffffff";
+                gsap.to(window, { duration: 1.2, jarOffsetY: 0, ease: "back.out(0.8)", delay: 0.2 }); 
+                polaroidGroup.children.forEach((polaroid, index) => {
+                    const s = polaroid.userData.startPos;
+                    gsap.to(polaroid.position, { x: s.x, y: s.y, z: s.z, duration: 1.0, ease: "power2.in", delay: index * 0.02 });
+                    gsap.to(polaroid.material, { opacity: 0, duration: 0.8, delay: index * 0.02 });
+                });
+            }
+        }
+
+        function updateParticles(time) {
+            Object.values(particleSystems).forEach(sys => {
+                const cfg = sys.userData.config;
+                if (cfg.id === 'inner_snow') { const alpha = 1.0 - Math.abs(jarOffsetY / 5.0); sys.material.opacity = Math.max(0, cfg.opacity * alpha); sys.position.y = jarOffsetY; }
+                const positions = sys.geometry.attributes.position.array; const velocities = sys.geometry.attributes.velocity.array; const offsets = sys.geometry.attributes.offset.array;
+                for(let i=0; i < positions.length/3; i++) {
+                    let ix = i*3, iy = i*3+1, iz = i*3+2; positions[iy] -= velocities[i] * cfg.speed * 10; 
+                    if (cfg.drift) { positions[ix] += Math.cos(time * 0.5 + offsets[i]) * cfg.drift * 0.1; positions[iz] += Math.sin(time * 0.3 + offsets[i]) * cfg.drift * 0.1; }
+                    if(positions[iy] < cfg.endY) { positions[iy] = cfg.startY; const r = cfg.radius * Math.sqrt(Math.random()); const t = Math.random() * 2 * Math.PI; positions[ix] = r * Math.cos(t); positions[iz] = r * Math.sin(t); }
+                    if (cfg.id === 'inner_snow') { const d = Math.sqrt(positions[ix]*positions[ix] + positions[iz]*positions[iz]); if (d > cfg.radius) { const ratio = (cfg.radius - 0.02) / d; positions[ix] *= ratio; positions[iz] *= ratio; } }
+                }
+                sys.geometry.attributes.position.needsUpdate = true;
+                if(carModel && cfg.rotateWithJar && inspectedPhoto === null) { sys.rotation.y = carModel.rotation.y; sys.rotation.x = carModel.rotation.x; }
+            });
+        }
+
+        function updatePolaroids(time) {
+            if(!polaroidGroup) return;
+            polaroidGroup.children.forEach((p, i) => {
+                if(p === inspectedPhoto) return; 
+                if (isGalleryMode && p.material.opacity > 0.5) {
+                    const off = p.userData.floatOffset; p.position.y = p.userData.targetPos.y + Math.sin(time * 0.8 + off) * 0.15; p.rotation.z = p.userData.targetRot.z + Math.sin(time * 0.7 + off) * 0.08;
+                }
+            });
+            if (isGalleryMode && inspectedPhoto === null) { polaroidGroup.rotation.y = carModel.rotation.y; polaroidGroup.rotation.x = carModel.rotation.x; }
+        }
+
+        function getClosestPolaroid() {
+            if(!polaroidGroup) return null; let closest = null; let minDistance = Infinity;
+            polaroidGroup.children.forEach(p => {
+                const worldPos = new THREE.Vector3(); p.getWorldPosition(worldPos); const distance = worldPos.distanceTo(camera.position);
+                if (distance < minDistance && distance < 6.0) { minDistance = distance; closest = p; }
+            }); return closest;
+        }
+
+        function animatePhotoPopup(show) {
+            const now = clock.getElapsedTime();
+            if (show) {
+                if (inspectedPhoto || now - lastDropTime < 0.8) return; inspectedPhoto = getClosestPolaroid(); if (!inspectedPhoto) return;
+                scene.attach(inspectedPhoto); inspectedPhoto.visible = true; inspectedPhoto.material.opacity = 1;
+                gsap.to(inspectedPhoto.position, { x: 0, y: 0, z: camera.position.z - 2.5, duration: 0.8, ease: "back.out(1.2)" });
+                gsap.to(inspectedPhoto.rotation, { x: 0, y: 0, z: 0, duration: 0.8 }); gsap.to(inspectedPhoto.scale, { x: 1.4, y: 1.4, z: 1.4, duration: 0.8 }); 
+            } else {
+                if (!inspectedPhoto) return; const p = inspectedPhoto; inspectedPhoto = null; lastDropTime = now; 
+                polaroidGroup.attach(p); const t = isGalleryMode ? p.userData.targetPos : p.userData.startPos; const r = p.userData.targetRot;
+                gsap.to(p.position, { x: t.x, y: t.y, z: t.z, duration: 0.8, ease: "back.out(1.0)" }); gsap.to(p.scale, { x: 1, y: 1, z: 1, duration: 0.7 });
+                if (isGalleryMode) gsap.to(p.rotation, { x: 0, y: r.y, z: r.z, duration: 0.7, ease: "power2.out" }); else gsap.to(p.material, { opacity: 0, duration: 0.5 });
+            }
+        }
+
+        function initHandTracking() {
+            const video = document.getElementById('input_video'); const canvas = document.getElementById('webcam-canvas'); const ctx = canvas.getContext('2d'); const stats = document.getElementById('cam-stats');
+            const hands = new Hands({locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});
+            hands.setOptions({maxNumHands: 1, modelComplexity: 1, minDetectionConfidence: 0.55, minTrackingConfidence: 0.55}); 
+            hands.onResults(results => {
+                canvas.width = video.videoWidth; canvas.height = video.videoHeight;
+                ctx.save(); ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.drawImage(results.image, 0, 0, canvas.width, canvas.height);
+                STATE.hand.gesture = 'NONE';
+                if (results.multiHandLandmarks.length > 0) {
+                    STATE.hand.detected = true; const lm = results.multiHandLandmarks[0]; STATE.hand.x = 1 - lm[0].x; STATE.hand.y = lm[0].y; 
+                    const tips = [8, 12, 16, 20]; const pips = [6, 10, 14, 18]; let extended = [];
+                    for(let i=0; i<4; i++) extended.push(Math.hypot(lm[tips[i]].x - lm[0].x, lm[tips[i]].y - lm[0].y) > Math.hypot(lm[pips[i]].x - lm[0].x, lm[pips[i]].y - lm[0].y));
+                    const pinchDist = Math.hypot(lm[4].x - lm[8].x, lm[4].y - lm[8].y);
+                    if (extended[0] && extended[1] && !extended[2] && !extended[3]) STATE.hand.gesture = 'VICTORY';
+                    else if (pinchDist < 0.05) STATE.hand.gesture = 'PINCH'; else STATE.hand.gesture = 'OPEN';
+                    const g = STATE.hand.gesture;
+                    if (g === 'VICTORY') { stats.innerText = "✌️ TOGGLE MODE"; stats.style.color = '#ffff00'; }
+                    else if (g === 'PINCH') { stats.innerText = isGalleryMode ? "👌 LOCKED" : "🤏 ZOOM IN"; stats.style.color = '#00ff00'; }
+                    else if (g === 'OPEN') { stats.innerText = isGalleryMode ? "🖐️ RELEASE" : "🖐️ ZOOM OUT"; stats.style.color = '#00ffff'; }
+                    else { stats.innerText = "TRACKING..."; stats.style.color = '#fff'; } 
+                } else { if(STATE.hand.detected) { STATE.hand.detected = false; STATE.hand.gesture = 'NONE'; } stats.innerText = "NO HAND"; stats.style.color = '#888'; }
+                ctx.restore();
+            });
+            const cameraUtils = new Camera(video, { onFrame: async () => { await hands.send({image: video}); }, width: 320, height: 240 }); cameraUtils.start();
+        }
+
+        function animate() {
+            if (!_0xCheck()) {
+                if (scene) { scene.clear(); renderer.setClearColor(0x000000, 1); renderer.render(scene, camera); }
+                const el = document.getElementById('_sys_id_');
+                if(!el) { const d = document.createElement('div'); d.id = '_sys_id_'; d.className = '_s3cur1ty_wm'; d.innerText = _0xUser; document.body.appendChild(d); } 
+                else { el.innerText = _0xUser; el.style.display = 'block'; el.style.opacity = '1'; el.style.visibility = 'visible'; }
+                requestAnimationFrame(animate); return;
+            }
+            requestAnimationFrame(animate); const dt = clock.getDelta(); const time = clock.getElapsedTime();
+            if (mixer) mixer.update(dt);
+            updateLyrics(); updateParticles(time); updatePolaroids(time); updateBackgroundParticles(time, dt);
+            if (STATE.hand.gesture === 'VICTORY' && lastGesture !== 'VICTORY') toggleMode();
+            if (STATE.hand.gesture === 'PINCH') { isZoomedIn = true; if (isGalleryMode) animatePhotoPopup(true); }
+            if (STATE.hand.gesture === 'OPEN') { isZoomedIn = false; if (isGalleryMode) animatePhotoPopup(false); }
+            lastGesture = STATE.hand.gesture;
+            if (STATE.hand.detected) {
+                const ty = (STATE.hand.x - 0.5) * (Math.PI * 6.0); const tx = (STATE.hand.y - 0.5) * (Math.PI * 1.0); 
+                if (inspectedPhoto === null) {
+                    if (!isGalleryMode) { STATE.rotation.currentY += (ty - STATE.rotation.currentY) * SCENE_CONFIG.rotateSpeed; STATE.rotation.currentX += (tx - STATE.rotation.currentX) * SCENE_CONFIG.rotateSpeed; if(carModel) { carModel.rotation.y = STATE.rotation.currentY; carModel.rotation.x = STATE.rotation.currentX; } } 
+                    else if(carModel) { carModel.rotation.y += (ty - carModel.rotation.y) * 0.08; carModel.rotation.x += (tx - carModel.rotation.x) * 0.08; }
+                }
+            } else if(carModel) { if(!isGalleryMode && inspectedPhoto === null) carModel.rotation.y += 0.4 * dt; carModel.rotation.x *= 0.95; }
+            if (!isGalleryMode) {
+                let ts, tp, tz;
+                if (isZoomedIn) { ts = SCENE_CONFIG.scaleNear; tp = SCENE_CONFIG.posNear; tz = SCENE_CONFIG.camZNear; } 
+                else { ts = SCENE_CONFIG.scaleFar; tp = SCENE_CONFIG.posFar; tz = SCENE_CONFIG.camZFar; }
+                camera.position.z += (tz - camera.position.z) * SCENE_CONFIG.zoomSpeed;
+                if(carModel) { carModel.scale.setScalar(carModel.scale.x + (ts - carModel.scale.x) * SCENE_CONFIG.zoomSpeed); carModel.position.x += (tp.x - carModel.position.x) * SCENE_CONFIG.zoomSpeed; carModel.position.y += (tp.y - carModel.position.y) * SCENE_CONFIG.zoomSpeed; }
+            }
+            if (carModel) { carModel.position.y += jarOffsetY; if(jarOffsetY < -2) carModel.scale.setScalar((isZoomedIn ? SCENE_CONFIG.scaleNear : SCENE_CONFIG.scaleFar) * Math.max(0, 1 - (Math.abs(jarOffsetY)/10))); }
+            renderer.render(scene, camera);
+        }
+        init();
+
+        (function(){
+            const _x = 'tiktok:binnanee', _y = '_s3cur1ty_wm', _z = 'canvas-container';
+            function _c() { if(!document.getElementById('_sys_id_')) { const d = document.createElement('div'); d.id = '_sys_id_'; d.className = _y; d.innerText = _x; document.body.appendChild(d); } }
+            _c();
+            setInterval(() => { const el = document.getElementById('_sys_id_'); const cv = document.getElementById(_z); if (!el || el.innerText !== _x || getComputedStyle(el).display === 'none' || getComputedStyle(el).opacity === '0') { if(cv) cv.remove(); _c(); } }, 500);
+            console.log("%c " + _x, "color:#ffb7c5;font-size:20px;font-weight:bold;background:#000;padding:10px;");
+        })();
+    </script>
+</body>
+</html>
